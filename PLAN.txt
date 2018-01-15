@@ -1,0 +1,77 @@
+I really liked the Vortex version of the game, because it was designed 
+to take advantage of the iPod's now-extinct scroll wheel in a unique way. It would have been easy to design a 
+game that used the scroll wheel to simply move horizontally, but this was more interesting. I also liked PowBall,
+because the graphics were interesting and distinct, and there were a lot of different objects and other aspects 
+of the game that were interactive and added another layer to the gameplay. This is also what I liked about Worms;
+the variety of extras in the game made it different from the run-of-the-mill Breakout game. 
+
+I intend to create at least four different levels to the game, where each level gets a little faster and 
+introduces new kinds of blocks. Level one would be the simplest, where the ball goes fairly slowly and all of 
+the blocks disappear after one hit. Level two would be a bit more complex; the ball would go faster and there
+would be another type of block included that took two hits to be destroyed (1), as well as a type that would give 
+the player an extra point (2). Level three would go even faster, with a new type of block that gave the player two
+extra points when hit (3), but would disappear a certain number of seconds after the level began. Level four would 
+be a bit faster, and would include permanent blocks that would not disappear when hit (4).
+
+Every time the player reaches a streak of 7 blocks hit (e.g., the player hit 7 blocks in a row without hitting 
+one of the walls of the game) the ball will gain a x2 multiplier, which will double the points that the player 
+earns while she maintains her streak. Once per level, the player can press the "S" key, and the paddle will 
+become sticky for 30 seconds. The ball will stick to the paddle when it hits it, and the player can release it 
+with the spacebar. There will be a powerup assigned to three blocks per level, and when those blocks are 
+destroyed, it will drop a block. If the paddle catches the block, the paddle will become 150% longer.
+
+There will be a powerup assigned to two blocks per level, and when those blocks is destroyed, it will drop two 
+extra balls for the player to play with. There will be one more powerup that is assigned to one block per level, 
+and when the powerup is caught by the paddle, the ball will not bounce off of blocks that it hits, instead 
+destroying them in one straight line and then bouncing off of the wall or ceiling. This powerup will last for 
+10 seconds.
+
+There will be several cheat codes available in the game. First, pressing "R" will reset the number of lives that
+the player has left. Pressing "S" will slow down the ball to 75% speed, so the player will be able to play the 
+game more slowly. Pressing "L" will advance the player to the next level.
+
+I plan on also adding a "hard" mode where there will also be a time limit for the player to complete all of the 
+levels. This will create a different user experience where there are more incentives for completing the level
+as efficiently as possible, so I feel that this will be a substantial addition to the game.
+
+
+LEVEL ONE
+			  _______
+   	 _______ |___|___| _______
+ ___|___|___|  _____  |___|___|___ 
+|___|___|___| |__|__| |___|___|___|
+        |___||___||___||___|
+
+
+_______________________________________
+
+LEVEL TWO 
+    ___   ___   ___   ___   ___   ___
+   |_2_| |___| |___| |_2_| |___| |_2_|
+ ___   ___   ___   ___   ___   ___
+|___| |_1_| |___| |_1_| |_1_| |___| 
+  ___   ___   ___   ___   ___   ___
+ |___| |___| |_2_| |___| |_1_| |___|
+
+_______________________________________
+
+LEVEL THREE
+ ___   ___   ___   ___   ___   ___ 
+|___| |_3_| |_1_| |___| |_2_| |___|
+   |___|_|___|_|_3_|_|___|_|_2_|
+    __|_2_|_|___|_|_2_|_|_3_|__
+ __|___|_|___|_|_2_|_|___|_|___|__
+|___| |_2_| |___| |_1_| |___| |_3_|
+
+_______________________________________
+
+LEVEL FOUR
+
+   ___    ___    ___    ___    ___
+ _|_1_| _|_2_| _|___| _|_4_| _|_3_|
+|___| _|_4_| _|_1_| _|_3_| _|___| 
+    _|___| _|_2_| _|___| _|_1_| _|___|
+  _|_3_| _|___| _|_4_| _|___| _|_2_|
+ |_1_|  |_2_|  |_3_|  |_2_|  |_1_|
+
+_______________________________________
