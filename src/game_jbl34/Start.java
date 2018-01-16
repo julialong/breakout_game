@@ -6,22 +6,24 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class Start extends Application {
-	public static final Paint Background_Color = Color.GRAY;
+	public static final Paint Background_Color = Color.PINK;
 	public static final int Game_Height = 400;
 	public static final int Game_Width = 600;
 	public static final int FRAMES_PER_SECOND = 40;
     public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
     public static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
+    public static final double PADDLE_SPEED = 10;
 	
 	// important components of the game
 	private Scene myScene;
-	private Paddle myPaddle;
+	private ImageView myPaddle;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -47,16 +49,28 @@ public class Start extends Application {
 		Group root = new Group();
 		// create level to see other objects
 		Scene scene = new Scene(root, width, height, background);
-		myPaddle = new Paddle(0);
-		ImageView bounce = myPaddle.paddleObject;
-		bounce.setX(Game_Width / 2);
-		bounce.setY(Game_Height -10);
+		Paddle bounce = new Paddle(0);
+		myPaddle = bounce.paddleObject;
+		myPaddle.setX(Game_Width / 2);
+		myPaddle.setY(Game_Height -10);
 		// add shapes to root to display
-		root.getChildren().add(bounce);
+		root.getChildren().add(myPaddle);
+		
+		scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
+		
 		return scene;
 	}
 	
 	private void step(double elaspedTime) {
 		
+	}
+	
+	private void handleKeyInput (KeyCode code) {
+		if (code == KeyCode.RIGHT) {
+			myPaddle.setX(myPaddle.getX() + PADDLE_SPEED);
+		}
+		if (code == KeyCode.LEFT) {
+			myPaddle.setX(myPaddle.getX() - PADDLE_SPEED);
+		}
 	}
 }

@@ -11,7 +11,6 @@ import javafx.scene.image.ImageView;
 
 public class Paddle{
 	
-	private int xPosition;
 	public String paddleImage; // the paddle image may change with powerups 
 	public Boolean sticky; // one powerup will allow the paddle to become sticky
 	public Boolean longPaddle; // another powerup will make the paddle 150% longer
