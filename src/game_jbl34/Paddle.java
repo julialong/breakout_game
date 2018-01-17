@@ -37,7 +37,6 @@ public class Paddle{
 			sticky = false;
 			longPaddle = true;
 		}
-		paddleImage = paddle1;
 		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddle1));
 		paddleObject = new ImageView(paddleImage);
 	}
