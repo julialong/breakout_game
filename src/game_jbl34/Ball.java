@@ -17,7 +17,7 @@ public class Ball {
 	}
 	
 	public void speedBall(ImageView myPaddle, double elapsedTime) {
-		if(this.ballObject.getX() <= 0 || this.ballObject.getX() >= Start.GAME_WIDTH) {
+		if(this.ballObject.getX() <= 0 | this.ballObject.getX() >= Start.GAME_WIDTH) {
 			this.xSpeed = -1 * this.xSpeed;
 		}
 		

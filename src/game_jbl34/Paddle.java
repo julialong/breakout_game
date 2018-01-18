@@ -11,7 +11,7 @@ import javafx.scene.image.ImageView;
 
 public class Paddle{
 	
-	public String paddleImage; // the paddle image may change with powerups 
+	public String paddleFile; // the paddle image may change with powerups 
 	public Boolean sticky; // one powerup will allow the paddle to become sticky
 	public Boolean longPaddle; // another powerup will make the paddle 150% longer
 	public ImageView paddleObject; // ImageView of paddle
@@ -23,21 +23,21 @@ public class Paddle{
 	
 	public Paddle(int powerup){
 		if(powerup == 0) {
-			paddleImage = paddle1;
+			paddleFile = paddle1;
 			sticky = false;
 			longPaddle = false;
 		}
 		else if(powerup == 1){
-			paddleImage = paddle1;
+			paddleFile = paddle1;
 			sticky = true;
 			longPaddle = false;
 		}
 		else {
-			paddleImage = paddle1;
+			paddleFile = paddle1;
 			sticky = false;
 			longPaddle = true;
 		}
-		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddle1));
+		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddleFile));
 		paddleObject = new ImageView(paddleImage);
 	}
 }
