@@ -56,9 +56,13 @@ public class Block {
 	public void destroy() {
 		this.lives--;
 		if (this.blockType == 2 && this.lives == 1) {
-			Image blockImage = new Image(getClass().getClassLoader().getResourceAsStream(BASIC_BLOCK));
+			double saveX = this.blockObject.getX();
+			double saveY = this.blockObject.getY();
 			Start.root.getChildren().remove(this.blockObject);
+			Image blockImage = new Image(getClass().getClassLoader().getResourceAsStream(BASIC_BLOCK));
 			this.blockObject = new ImageView(blockImage);
+			this.blockObject.setX(saveX);
+			this.blockObject.setY(saveY);
 			Start.root.getChildren().add(this.blockObject);
 		}
 		if (this.lives == 0) {

@@ -17,12 +17,14 @@ public class Ball {
 	}
 	
 	public void speedBall(ImageView myPaddle, double elapsedTime) {
-		if(this.ballObject.getX() <= 0 | this.ballObject.getX() >= Start.GAME_WIDTH) {
+		if(this.ballObject.getX() <= 0 | this.ballObject.getX() >= Start.GAME_WIDTH-10) {
 			this.xSpeed = -1 * this.xSpeed;
+			this.ySpeed = 1.001 * this.ySpeed;
 		}
 		
 		if(this.ballObject.getY() <= 0) {
 			this.ySpeed = -1 * this.ySpeed;
+			this.xSpeed = .999 * this.xSpeed;
 		}
 
 		// check if the ball hits the paddle

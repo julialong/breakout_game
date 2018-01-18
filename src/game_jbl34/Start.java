@@ -6,8 +6,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
@@ -19,6 +19,7 @@ import javafx.util.Duration;
 
 public class Start extends Application {
 	public static final Paint START_COLOR = Color.ANTIQUEWHITE;
+	public static final String WELCOME_SCREEN = "splash.gif";
 	public static final Paint BACKGROUND_COLOR = Color.PINK;
 	public static final int GAME_HEIGHT = 400;
 	public static final int GAME_WIDTH = 600;
@@ -47,7 +48,9 @@ public class Start extends Application {
 	private Block[] myBlocks;
 	private Ball myBall;
 	public static int myPoints = 0;
+	public int myLives = 3;
 	private Text pointDisplay;
+	private Stage currentStage;
 	
 	public double ballXSpeed = 80;
 	public double ballYSpeed = 80;
@@ -58,9 +61,9 @@ public class Start extends Application {
 
 	@Override
 	public void start(Stage beginGame) {	
-		myLevel = 1;
-		chooseLevel();
-		myScene = setupGame(GAME_WIDTH, GAME_HEIGHT, BACKGROUND_COLOR);
+		myLevel = 0;
+		myScene = setLevel(GAME_WIDTH, GAME_HEIGHT, BACKGROUND_COLOR);
+		currentStage = beginGame;
 		beginGame.setScene(myScene);
 		beginGame.setTitle("Breakout");
 		beginGame.show();
@@ -69,10 +72,11 @@ public class Start extends Application {
 		Timeline animation = new Timeline();
 		animation.setCycleCount(Timeline.INDEFINITE);
 		animation.getKeyFrames().add(frame);
+		animation.setDelay(Duration.millis(1000));
 		animation.play();
 	}
 
-	public Scene startGame(int width, int height, Paint background) {
+ 	public Scene startGame(int width, int height, Paint background) {
 		root = new Group();
 		Scene scene = new Scene(root, width, height, background);
 		Text welcome = new Text(GAME_WIDTH/2, GAME_HEIGHT/2, "Hello, world!");
@@ -80,9 +84,7 @@ public class Start extends Application {
 		return scene;
 	}
 	
-	public Scene setupGame(int width, int height, Paint background) {// create the top level for the other objects in the game
-		return setLevel(width, height, background);
-	}
+
 
 	private void readInput(String input) {
 
@@ -127,6 +129,10 @@ public class Start extends Application {
 	
 	private void step(double elapsedTime) {
 
+		if (myLevel == 0) {
+			return;
+		}
+
 		// move the ball
 		myBall.speedBall(myPaddle, elapsedTime);
 		myBall.ballObject.setX(myBall.ballObject.getX() + .05 + myBall.xSpeed * elapsedTime);
@@ -135,18 +141,17 @@ public class Start extends Application {
 		int count = numBlocks;
 		for (Block block : myBlocks) {
 			if (myBall.ballObject.getBoundsInParent().intersects(block.blockObject.getBoundsInParent()) && block.blockOn) {
-				myBall.xSpeed = -1*myBall.xSpeed;
 				myBall.ySpeed = -1*myBall.ySpeed;
-				System.out.println(block.points);
 				block.destroy();
 				if (!block.blockOn) count--;
 			} 
 		}
 		pointDisplay.setText("Points: " + myPoints);
-		//System.out.println(myPoints);
 		if (count == 0) {
 			myLevel++;
-			setLevel(GAME_WIDTH, GAME_HEIGHT, BACKGROUND_COLOR);
+			chooseLevel();
+			changeScene();
+			
 		}
 	}
 
@@ -157,50 +162,76 @@ public class Start extends Application {
 		root = new Group();
 		// create level to see other objects
 		Scene scene = new Scene(root, width, height, background);
-		
-		chooseLevel();
-		
-		// create the paddle
-		Paddle bounce = new Paddle(0);
-		myPaddle = bounce.paddleObject;
-		myPaddle.setX(GAME_WIDTH / 2);
-		myPaddle.setY(GAME_HEIGHT - 10);
 
-		// create blocks based on current level
-		
-		readInput(levelDoc);
-		for (int i = 0; i < numBlocks; i++) {
-			myBlocks[i] = new Block(blockType[i]);
-			myBlocks[i].blockObject.setX(blockPos[i][0]);
-			myBlocks[i].blockObject.setY(blockPos[i][1]);
-		}
-		
-		// create first ball 
-		myBall = new Ball();
-		myBall.xSpeed = ballXSpeed;
-		myBall.ySpeed = ballYSpeed;
-		myBall.ballObject.setX(GAME_WIDTH / 2);
-		myBall.ballObject.setY(GAME_HEIGHT - 100);
-		
-		//create text
-		pointDisplay = new Text("Points: " + myPoints);
-		pointDisplay.setFont(new Font(12));
-		pointDisplay.setX(5);
-		pointDisplay.setY(10);
+		if (myLevel == 0) {
+			ImageView welcomeScreen = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(WELCOME_SCREEN)));
+			root.getChildren().add(welcomeScreen);
+		} else {
+			chooseLevel();
+			// create the paddle
+			Paddle bounce = new Paddle(0);
+			myPaddle = bounce.paddleObject;
+			myPaddle.setX(GAME_WIDTH / 2);
+			myPaddle.setY(GAME_HEIGHT - 10);
 
-		// add shapes to root to display
-		root.getChildren().add(myPaddle);
-		for (int i = 0; i < numBlocks; i++) {
-			root.getChildren().add(myBlocks[i].blockObject);
+			// create blocks based on current level
+			readInput(levelDoc);
+			for (int i = 0; i < numBlocks; i++) {
+				myBlocks[i] = new Block(blockType[i]);
+				myBlocks[i].blockObject.setX(blockPos[i][0]);
+				myBlocks[i].blockObject.setY(blockPos[i][1]);
+			}
+
+			// create first ball
+			myBall = new Ball();
+			myBall.xSpeed = ballXSpeed;
+			myBall.ySpeed = ballYSpeed;
+			myBall.ballObject.setX(GAME_WIDTH / 2);
+			myBall.ballObject.setY(GAME_HEIGHT - 100);
+
+			// create text
+			pointDisplay = new Text("Points: " + myPoints);
+			pointDisplay.setFont(new Font(12));
+			pointDisplay.setX(5);
+			pointDisplay.setY(10);
+
+			// add shapes to root to display
+			root.getChildren().add(myPaddle);
+			for (int i = 0; i < numBlocks; i++) {
+				root.getChildren().add(myBlocks[i].blockObject);
+			}
+			root.getChildren().add(myBall.ballObject);
+			root.getChildren().add(pointDisplay);
+
 		}
-		root.getChildren().add(myBall.ballObject);
-		root.getChildren().add(pointDisplay);
 
 		scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
 		return scene;
 	}
 	
+	private void changeScene() {
+		currentStage.close();
+		Stage newGame = new Stage();
+		currentStage = newGame;
+		Scene newScene = setLevel(GAME_WIDTH,GAME_HEIGHT,BACKGROUND_COLOR);
+		newGame.setScene(newScene);
+		newGame.setTitle("Breakout");
+		newGame.show();
+
+		KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY));
+		Timeline animation = new Timeline();
+		animation.setCycleCount(Timeline.INDEFINITE);
+		animation.getKeyFrames().add(frame);
+		animation.setDelay(Duration.seconds(2));
+		animation.play();
+	}
+	
 	private void handleKeyInput(KeyCode code) {
+		if (myLevel == 0 && code == KeyCode.SPACE) {
+			myLevel++;
+			chooseLevel();
+			changeScene();
+		}
 		if (code == KeyCode.RIGHT) {
 			if (myPaddle.getX() <= GAME_WIDTH - 40) {
 				myPaddle.setX(myPaddle.getX() + PADDLE_SPEED);
@@ -212,16 +243,19 @@ public class Start extends Application {
 			}
 		}
 		if (code == KeyCode.L) {
-			myLevel++;
-			setLevel(GAME_WIDTH, GAME_HEIGHT, BACKGROUND_COLOR);
+			if (myLevel <= 4) {
+				myLevel++;
+				chooseLevel();
+				changeScene();
+			}
 		}
 		if (code == KeyCode.S) {
-			myBall.xSpeed = myBall.xSpeed/2;
-			myBall.ySpeed = myBall.ySpeed/2;
+			myBall.xSpeed = myBall.xSpeed * .75;
+			myBall.ySpeed = myBall.ySpeed * .75;
 		}
 		if (code == KeyCode.F) {
-			myBall.xSpeed = myBall.xSpeed*2;
-			myBall.ySpeed = myBall.ySpeed*2;
+			myBall.xSpeed = myBall.xSpeed * 1.5;
+			myBall.ySpeed = myBall.ySpeed * 1.5;
 		}
 	}
 }
