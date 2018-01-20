@@ -20,6 +20,8 @@ import javafx.util.Duration;
 public class Start extends Application {
 	public static final Paint START_COLOR = Color.ANTIQUEWHITE;
 	public static final String WELCOME_SCREEN = "splash.gif";
+	public static final String LOST_SCREEN = "lost.gif";
+	public static final String WON_SCREEN = "won.gif";
 	public static final Paint BACKGROUND_COLOR = Color.PINK;
 	public static final int GAME_HEIGHT = 400;
 	public static final int GAME_WIDTH = 600;
@@ -47,13 +49,15 @@ public class Start extends Application {
 	private ImageView myPaddle;
 	private Block[] myBlocks;
 	private Ball myBall;
+	private Ball[] lifeBalls;
 	public static int myPoints = 0;
 	public int myLives = 3;
 	private Text pointDisplay;
+	private Text doneText;
 	private Stage currentStage;
 	
-	public double ballXSpeed = 80;
-	public double ballYSpeed = 80;
+	public double ballXSpeed = 65;
+	public double ballYSpeed = 65;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -112,9 +116,10 @@ public class Start extends Application {
 		}
 	}
 
+	
 	private void chooseLevel() {
 		if (myLevel == 1) {
-		levelDoc = LEVEL_1;
+			levelDoc = LEVEL_1;
 		}
 		if (myLevel == 2) {
 			levelDoc = LEVEL_2;
@@ -126,7 +131,7 @@ public class Start extends Application {
 			levelDoc = LEVEL_4;
 		}
 	}
-	
+
 	private void step(double elapsedTime) {
 
 		if (myLevel == 0) {
@@ -137,23 +142,32 @@ public class Start extends Application {
 		myBall.speedBall(myPaddle, elapsedTime);
 		myBall.ballObject.setX(myBall.ballObject.getX() + .05 + myBall.xSpeed * elapsedTime);
 		myBall.ballObject.setY(myBall.ballObject.getY() + .05 + myBall.ySpeed * elapsedTime);
-		
+
 		int count = numBlocks;
 		for (Block block : myBlocks) {
-			if (myBall.ballObject.getBoundsInParent().intersects(block.blockObject.getBoundsInParent()) && block.blockOn) {
-				myBall.ySpeed = -1*myBall.ySpeed;
+			if (myBall.ballObject.getBoundsInParent().intersects(block.blockObject.getBoundsInParent())
+					&& block.blockOn) {
+				myBall.ySpeed = -1 * myBall.ySpeed;
 				block.destroy();
-				if (!block.blockOn) count--;
-			} 
+			}
+			if (!block.blockOn)
+				count--;
 		}
 		pointDisplay.setText("Points: " + myPoints);
+
 		if (count == 0) {
 			myLevel++;
 			chooseLevel();
 			changeScene();
-			
+		}
+		if (myBall.ballObject.getY() > GAME_HEIGHT) {
+			myLives--;
+			checkLives();
+			myBall.ballObject.setX(GAME_WIDTH / 2);
+			myBall.ballObject.setY(GAME_HEIGHT - 150);
 		}
 	}
+	
 
 	private Scene setLevel(int width, int height, Paint background) {
 		/**
@@ -166,7 +180,8 @@ public class Start extends Application {
 		if (myLevel == 0) {
 			ImageView welcomeScreen = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(WELCOME_SCREEN)));
 			root.getChildren().add(welcomeScreen);
-		} else {
+		} 
+		else {
 			chooseLevel();
 			// create the paddle
 			Paddle bounce = new Paddle(0);
@@ -181,19 +196,25 @@ public class Start extends Application {
 				myBlocks[i].blockObject.setX(blockPos[i][0]);
 				myBlocks[i].blockObject.setY(blockPos[i][1]);
 			}
+			
+			System.out.println(myLives);
+			
+			lifeBalls = new Ball[myLives];
+			for (int i=0; i< myLives; i++) {
+				lifeBalls[i] = new Ball();
+				lifeBalls[i].ballObject.setX(GAME_WIDTH - 20 * i - 20);
+				lifeBalls[i].ballObject.setY(10);
+				root.getChildren().add(lifeBalls[i].ballObject);
+			}
 
 			// create first ball
-			myBall = new Ball();
-			myBall.xSpeed = ballXSpeed;
-			myBall.ySpeed = ballYSpeed;
-			myBall.ballObject.setX(GAME_WIDTH / 2);
-			myBall.ballObject.setY(GAME_HEIGHT - 100);
+			generateBall();
 
 			// create text
 			pointDisplay = new Text("Points: " + myPoints);
 			pointDisplay.setFont(new Font(12));
 			pointDisplay.setX(5);
-			pointDisplay.setY(10);
+			pointDisplay.setY(15);
 
 			// add shapes to root to display
 			root.getChildren().add(myPaddle);
@@ -258,4 +279,46 @@ public class Start extends Application {
 			myBall.ySpeed = myBall.ySpeed * 1.5;
 		}
 	}
+
+	private void generateBall() {
+		myBall = new Ball();
+		myBall.ballObject.setX(GAME_WIDTH / 2);
+		myBall.ballObject.setY(GAME_HEIGHT - 150);
+	}
+	
+	private void checkLives() {
+		if (myLives < 0) {
+			root.getChildren().remove(myBall.ballObject);
+			displayLost();
+		}
+		if (myLives >= 0 && myLives < 3) root.getChildren().remove(lifeBalls[myLives].ballObject);
+	}
+	
+	private void displayLost() {
+		ImageView lostDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(LOST_SCREEN)));
+		root.getChildren().remove(pointDisplay);
+		
+		endText();
+		
+		root.getChildren().add(lostDisplay);
+		root.getChildren().add(doneText);
+	}
+	
+	private void displayWon() {
+		ImageView wonDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(WON_SCREEN)));
+		root.getChildren().remove(pointDisplay);
+		
+		endText();
+		
+		root.getChildren().add(wonDisplay);
+		root.getChildren().add(doneText);
+	}
+	
+	private void endText() {
+		doneText = new Text("" + myPoints);
+		doneText.setFont(new Font(40));
+		doneText.setX(GAME_WIDTH /2 + 40);
+		doneText.setY(GAME_HEIGHT/2 + 70);
+	}
 }
+
