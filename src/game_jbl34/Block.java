@@ -10,6 +10,7 @@ public class Block {
 	public int blockType;
 	public int lives;
 	public int points;
+	public Boolean multiply;
 	
 	private static final String BASIC_BLOCK = "basic_brick.gif";
 	private static final String TWO_BLOCK = "block2.gif";
@@ -23,6 +24,7 @@ public class Block {
 	 */
 	public Block(int type) {
 		blockOn = true;
+		multiply = false;
 		blockType = type;
 		Image blockImage = new Image(getClass().getClassLoader().getResourceAsStream(chooseImage(type)));
 		blockObject = new ImageView(blockImage);
@@ -67,6 +69,7 @@ public class Block {
 		}
 		if (this.lives == 0) {
 			Start.myPoints += this.points;
+			if (multiply) Start.myPoints += this.points;
 			Start.root.getChildren().remove(this.blockObject);
 			this.blockOn = false;
 		}

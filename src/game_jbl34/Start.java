@@ -46,7 +46,7 @@ public class Start extends Application {
 	private Scene myScene;
 	private int myLevel;
 	private String levelDoc;
-	private ImageView myPaddle;
+	private Paddle myPaddle;
 	private Block[] myBlocks;
 	private Ball myBall;
 	private Ball[] lifeBalls;
@@ -55,6 +55,7 @@ public class Start extends Application {
 	private Text pointDisplay;
 	private Text doneText;
 	private Stage currentStage;
+	private Timeline animation;
 	
 	public double ballXSpeed = 65;
 	public double ballYSpeed = 65;
@@ -73,7 +74,7 @@ public class Start extends Application {
 		beginGame.show();
 
 		KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY));
-		Timeline animation = new Timeline();
+		animation = new Timeline();
 		animation.setCycleCount(Timeline.INDEFINITE);
 		animation.getKeyFrames().add(frame);
 		animation.setDelay(Duration.millis(1000));
@@ -139,17 +140,21 @@ public class Start extends Application {
 		}
 
 		// move the ball
+		
 		myBall.speedBall(myPaddle, elapsedTime);
-		myBall.ballObject.setX(myBall.ballObject.getX() + .05 + myBall.xSpeed * elapsedTime);
-		myBall.ballObject.setY(myBall.ballObject.getY() + .05 + myBall.ySpeed * elapsedTime);
+		myBall.ballObject.setX(myBall.ballObject.getX() + myBall.xSpeed * elapsedTime);
+		myBall.ballObject.setY(myBall.ballObject.getY() + myBall.ySpeed * elapsedTime);
 
 		int count = numBlocks;
 		for (Block block : myBlocks) {
 			if (myBall.ballObject.getBoundsInParent().intersects(block.blockObject.getBoundsInParent())
 					&& block.blockOn) {
+				myBall.streak++;
+				if (myBall.streak > 6) multiplyOn();
 				myBall.ySpeed = -1 * myBall.ySpeed;
 				block.destroy();
 			}
+			
 			if (!block.blockOn)
 				count--;
 		}
@@ -157,15 +162,20 @@ public class Start extends Application {
 
 		if (count == 0) {
 			myLevel++;
+			if (myLevel == 5) {
+				displayWon();
+			}
 			chooseLevel();
 			changeScene();
 		}
 		if (myBall.ballObject.getY() > GAME_HEIGHT) {
 			myLives--;
 			checkLives();
+			myBall.turnOff();
 			myBall.ballObject.setX(GAME_WIDTH / 2);
 			myBall.ballObject.setY(GAME_HEIGHT - 150);
 		}
+		
 	}
 	
 
@@ -184,10 +194,9 @@ public class Start extends Application {
 		else {
 			chooseLevel();
 			// create the paddle
-			Paddle bounce = new Paddle(0);
-			myPaddle = bounce.paddleObject;
-			myPaddle.setX(GAME_WIDTH / 2);
-			myPaddle.setY(GAME_HEIGHT - 10);
+			myPaddle = new Paddle(0);
+			myPaddle.paddleObject.setX(GAME_WIDTH / 2);
+			myPaddle.paddleObject.setY(GAME_HEIGHT - 10);
 
 			// create blocks based on current level
 			readInput(levelDoc);
@@ -196,8 +205,6 @@ public class Start extends Application {
 				myBlocks[i].blockObject.setX(blockPos[i][0]);
 				myBlocks[i].blockObject.setY(blockPos[i][1]);
 			}
-			
-			System.out.println(myLives);
 			
 			lifeBalls = new Ball[myLives];
 			for (int i=0; i< myLives; i++) {
@@ -217,7 +224,7 @@ public class Start extends Application {
 			pointDisplay.setY(15);
 
 			// add shapes to root to display
-			root.getChildren().add(myPaddle);
+			root.getChildren().add(myPaddle.paddleObject);
 			for (int i = 0; i < numBlocks; i++) {
 				root.getChildren().add(myBlocks[i].blockObject);
 			}
@@ -253,14 +260,17 @@ public class Start extends Application {
 			chooseLevel();
 			changeScene();
 		}
+		if (myLevel > 0 && code == KeyCode.SPACE) {
+			myBall.turnOn();
+		}
 		if (code == KeyCode.RIGHT) {
-			if (myPaddle.getX() <= GAME_WIDTH - 40) {
-				myPaddle.setX(myPaddle.getX() + PADDLE_SPEED);
+			if (myPaddle.paddleObject.getX() <= GAME_WIDTH - 40) {
+				myPaddle.paddleObject.setX(myPaddle.paddleObject.getX() + PADDLE_SPEED);
 			}
 		}
 		if (code == KeyCode.LEFT) {
-			if (myPaddle.getX() >= 0) {
-				myPaddle.setX(myPaddle.getX() - PADDLE_SPEED);
+			if (myPaddle.paddleObject.getX() >= 0) {
+				myPaddle.paddleObject.setX(myPaddle.paddleObject.getX() - PADDLE_SPEED);
 			}
 		}
 		if (code == KeyCode.L) {
@@ -278,12 +288,25 @@ public class Start extends Application {
 			myBall.xSpeed = myBall.xSpeed * 1.5;
 			myBall.ySpeed = myBall.ySpeed * 1.5;
 		}
+		if (code == KeyCode.O) {
+			double saveX = myPaddle.paddleObject.getX();
+			double saveY = myPaddle.paddleObject.getY();
+			root.getChildren().remove(myPaddle.paddleObject);
+			myPaddle.makeSticky();
+			myPaddle.paddleObject.setX(saveX);
+			myPaddle.paddleObject.setY(saveY);
+			root.getChildren().add(myPaddle.paddleObject);
+		}
+		if (code == KeyCode.R) {
+			restoreLives();
+		}
 	}
 
 	private void generateBall() {
 		myBall = new Ball();
 		myBall.ballObject.setX(GAME_WIDTH / 2);
 		myBall.ballObject.setY(GAME_HEIGHT - 150);
+		myBall.streak = 0;
 	}
 	
 	private void checkLives() {
@@ -297,9 +320,7 @@ public class Start extends Application {
 	private void displayLost() {
 		ImageView lostDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(LOST_SCREEN)));
 		root.getChildren().remove(pointDisplay);
-		
 		endText();
-		
 		root.getChildren().add(lostDisplay);
 		root.getChildren().add(doneText);
 	}
@@ -307,9 +328,7 @@ public class Start extends Application {
 	private void displayWon() {
 		ImageView wonDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(WON_SCREEN)));
 		root.getChildren().remove(pointDisplay);
-		
 		endText();
-		
 		root.getChildren().add(wonDisplay);
 		root.getChildren().add(doneText);
 	}
@@ -317,8 +336,25 @@ public class Start extends Application {
 	private void endText() {
 		doneText = new Text("" + myPoints);
 		doneText.setFont(new Font(40));
-		doneText.setX(GAME_WIDTH /2 + 40);
+		doneText.setX(GAME_WIDTH /2 + 32);
 		doneText.setY(GAME_HEIGHT/2 + 70);
 	}
+	
+	private void multiplyOn() {
+		for (Block block : myBlocks) {
+			block.multiply = true;
+		}
+	}
+	
+	private void restoreLives() {
+		for (int i = 0; i < myLives; i++ ) {
+			root.getChildren().remove(lifeBalls[i].ballObject);
+		}
+		myLives = 3;
+		for (int i = 0; i < myLives; i++ ) {
+			root.getChildren().add(lifeBalls[i].ballObject);
+		}
+	}
+		
 }
 

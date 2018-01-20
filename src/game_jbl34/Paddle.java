@@ -18,8 +18,8 @@ public class Paddle{
 	
 	// possible images
 	private static final String paddle1 = "paddle.gif";
-	//private static final String paddle2 = "stickyPaddle.png";
-	//private static final String paddle3 = "longPaddle.png";
+	private static final String paddle2 = "sticky_paddle.gif";
+	private static final String paddle3 = "long_paddle.gif";
 	
 	public Paddle(int powerup){
 		if(powerup == 0) {
@@ -28,16 +28,25 @@ public class Paddle{
 			longPaddle = false;
 		}
 		else if(powerup == 1){
-			paddleFile = paddle1;
+			paddleFile = paddle2;
 			sticky = true;
 			longPaddle = false;
 		}
 		else {
-			paddleFile = paddle1;
+			paddleFile = paddle3;
 			sticky = false;
 			longPaddle = true;
 		}
 		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddleFile));
 		paddleObject = new ImageView(paddleImage);
+	}
+	
+	public void makeSticky() {
+		this.paddleObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle2)));
+		this.sticky = true;
+	}
+	
+	public Boolean isSticky() {
+		return this.sticky;
 	}
 }
