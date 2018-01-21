@@ -1,11 +1,13 @@
 package game_jbl34;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -50,12 +52,16 @@ public class Start extends Application {
 	private Block[] myBlocks;
 	private Ball myBall;
 	private Ball[] lifeBalls;
+	private int[] Powerups;
+	private ArrayList<Powerup> PowerupList = new ArrayList<Powerup>();
 	public static int myPoints = 0;
 	public int myLives = 3;
 	private Text pointDisplay;
 	private Text doneText;
 	private Stage currentStage;
 	private Timeline animation;
+	private double pTime;
+	private double stickyTime;
 	
 	public double ballXSpeed = 65;
 	public double ballYSpeed = 65;
@@ -104,20 +110,21 @@ public class Start extends Application {
 			blockType = new int[numBlocks];
 			blockPos = new double[numBlocks][2];
 			myBlocks = new Block[numBlocks];
+			Powerups = new int[numBlocks];
 			int i = 0;
 			while (scan.hasNextInt()) {
 				blockType[i] = scan.nextInt();
 				blockPos[i][0] = scan.nextDouble();
 				blockPos[i][1] = scan.nextDouble();
+				Powerups[i] = scan.nextInt();
 				i++;
 			}
 			scan.close();
 		} catch (Exception E) {
-			System.out.println("File not found.");
+			System.out.println(E);
 		}
 	}
 
-	
 	private void chooseLevel() {
 		if (myLevel == 1) {
 			levelDoc = LEVEL_1;
@@ -151,13 +158,29 @@ public class Start extends Application {
 					&& block.blockOn) {
 				myBall.streak++;
 				if (myBall.streak > 6) multiplyOn();
-				myBall.ySpeed = -1 * myBall.ySpeed;
+				if (myBall.bounce) myBall.ySpeed = -1 * myBall.ySpeed;
+				checkPowerups(block);
 				block.destroy();
 			}
 			
 			if (!block.blockOn)
 				count--;
 		}
+		
+		pTime += elapsedTime;
+		if (pTime > 10) myBall.bounce = true;
+		
+		stickyTime += elapsedTime;
+		if (pTime > 30) myPaddle.notSticky();
+		
+		for (Powerup power : PowerupList) {
+			power.powerObject.setY(power.powerObject.getY() + power.ySpeed * elapsedTime);
+			if (power.powerObject.getBoundsInParent().intersects(myPaddle.paddleObject.getBoundsInParent())) {
+				activatePowerup(power);
+				root.getChildren().remove(power.powerObject);
+			}
+		}
+		
 		pointDisplay.setText("Points: " + myPoints);
 
 		if (count == 0) {
@@ -168,7 +191,7 @@ public class Start extends Application {
 			chooseLevel();
 			changeScene();
 		}
-		if (myBall.ballObject.getY() > GAME_HEIGHT) {
+		if (myBall.ballObject.getY() > GAME_HEIGHT - 10) {
 			myLives--;
 			checkLives();
 			myBall.turnOff();
@@ -178,7 +201,6 @@ public class Start extends Application {
 		
 	}
 	
-
 	private Scene setLevel(int width, int height, Paint background) {
 		/**
 		 * refresh root
@@ -193,17 +215,21 @@ public class Start extends Application {
 		} 
 		else {
 			chooseLevel();
+			
 			// create the paddle
 			myPaddle = new Paddle(0);
 			myPaddle.paddleObject.setX(GAME_WIDTH / 2);
 			myPaddle.paddleObject.setY(GAME_HEIGHT - 10);
-
-			// create blocks based on current level
+			
+			
 			readInput(levelDoc);
+			
+			// create blocks based on current level
 			for (int i = 0; i < numBlocks; i++) {
 				myBlocks[i] = new Block(blockType[i]);
 				myBlocks[i].blockObject.setX(blockPos[i][0]);
 				myBlocks[i].blockObject.setY(blockPos[i][1]);
+				myBlocks[i].powerup = Powerups[i];
 			}
 			
 			lifeBalls = new Ball[myLives];
@@ -260,8 +286,10 @@ public class Start extends Application {
 			chooseLevel();
 			changeScene();
 		}
-		if (myLevel > 0 && code == KeyCode.SPACE) {
-			myBall.turnOn();
+		if (myLevel > 0 && code == KeyCode.SPACE && !myBall.move) myBall.turnOn();
+		if (myLevel > 0 && code == KeyCode.SPACE && myBall.move && myPaddle.isSticky()) {
+			myBall.xSpeed = 65;
+			myBall.ySpeed = -65;
 		}
 		if (code == KeyCode.RIGHT) {
 			if (myPaddle.paddleObject.getX() <= GAME_WIDTH - 40) {
@@ -288,11 +316,12 @@ public class Start extends Application {
 			myBall.xSpeed = myBall.xSpeed * 1.5;
 			myBall.ySpeed = myBall.ySpeed * 1.5;
 		}
-		if (code == KeyCode.O) {
+		if (code == KeyCode.O && !myPaddle.wasSticky()) {
 			double saveX = myPaddle.paddleObject.getX();
 			double saveY = myPaddle.paddleObject.getY();
 			root.getChildren().remove(myPaddle.paddleObject);
 			myPaddle.makeSticky();
+			stickyTime = 0;
 			myPaddle.paddleObject.setX(saveX);
 			myPaddle.paddleObject.setY(saveY);
 			root.getChildren().add(myPaddle.paddleObject);
@@ -336,7 +365,7 @@ public class Start extends Application {
 	private void endText() {
 		doneText = new Text("" + myPoints);
 		doneText.setFont(new Font(40));
-		doneText.setX(GAME_WIDTH /2 + 32);
+		doneText.setX(GAME_WIDTH /2 + 30);
 		doneText.setY(GAME_HEIGHT/2 + 70);
 	}
 	
@@ -356,5 +385,34 @@ public class Start extends Application {
 		}
 	}
 		
+	private void checkPowerups(Block block) {
+		if (block.hasPowerupBlock()) {
+			Powerup newPowerup = new Powerup(block.powerup);
+			PowerupList.add(newPowerup);
+			newPowerup.powerObject.setX(block.getX());
+			newPowerup.powerObject.setY(block.getY());
+			root.getChildren().add(newPowerup.powerObject);
+			newPowerup.startMoving();
+		}
+		if (block.releaseBalls()) {
+			
+		}
+	}
+	
+	private void activatePowerup(Powerup powerUp) {
+		if (powerUp.pType == 1) {
+			double saveX = myPaddle.paddleObject.getX();
+			double saveY = myPaddle.paddleObject.getY();
+			root.getChildren().remove(myPaddle.paddleObject);
+			myPaddle.makeLong();
+			myPaddle.paddleObject.setX(saveX);
+			myPaddle.paddleObject.setY(saveY);
+			root.getChildren().add(myPaddle.paddleObject);
+		}
+		if (powerUp.pType == 2) {
+			pTime = 0;
+			myBall.bounce = false;
+		}
+	}
 }
 

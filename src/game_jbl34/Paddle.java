@@ -13,7 +13,7 @@ public class Paddle{
 	
 	public String paddleFile; // the paddle image may change with powerups 
 	public Boolean sticky; // one powerup will allow the paddle to become sticky
-	public Boolean longPaddle; // another powerup will make the paddle 150% longer
+	public Boolean wasSticky;
 	public ImageView paddleObject; // ImageView of paddle
 	
 	// possible images
@@ -22,20 +22,18 @@ public class Paddle{
 	private static final String paddle3 = "long_paddle.gif";
 	
 	public Paddle(int powerup){
+		wasSticky = false;
 		if(powerup == 0) {
 			paddleFile = paddle1;
 			sticky = false;
-			longPaddle = false;
 		}
 		else if(powerup == 1){
 			paddleFile = paddle2;
 			sticky = true;
-			longPaddle = false;
 		}
 		else {
 			paddleFile = paddle3;
 			sticky = false;
-			longPaddle = true;
 		}
 		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddleFile));
 		paddleObject = new ImageView(paddleImage);
@@ -46,7 +44,19 @@ public class Paddle{
 		this.sticky = true;
 	}
 	
+	public void notSticky() {
+		
+	}
+	
 	public Boolean isSticky() {
 		return this.sticky;
+	}
+	
+	public Boolean wasSticky() {
+		return this.wasSticky;
+	}
+	
+	public void makeLong() {
+		this.paddleObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle3)));
 	}
 }

@@ -10,8 +10,10 @@ public class Ball {
 	public double ySpeed;
 	public Boolean move;
 	public int streak;
+	public Boolean bounce;
 	
 	private static final String BALL_IMAGE = "ball.gif";
+	private static final String EXTRA_IMAGE = "extra_ball.gif";
 	
 	public Ball() {
 		Image ballImage = new Image(getClass().getClassLoader().getResourceAsStream(BALL_IMAGE));
@@ -20,6 +22,7 @@ public class Ball {
 		xSpeed = 0;
 		ySpeed = 0;
 		streak = 0;
+		bounce = true;
 	}
 	
 	public void turnOn() {
@@ -53,9 +56,9 @@ public class Ball {
 			this.ballObject.setY(this.ballObject.getY() - this.ySpeed * elapsedTime);
 			this.ySpeed = -1 * this.ySpeed;
 		}
-		if (this.ballObject.getBoundsInParent().intersects(myPaddle.paddleObject.getBoundsInParent()) && !myPaddle.isSticky()) {
-			this.ballObject.setX(myPaddle.paddleObject.getX());
-			this.ballObject.setY(myPaddle.paddleObject.getY());
+		if (this.ballObject.getBoundsInParent().intersects(myPaddle.paddleObject.getBoundsInParent()) && myPaddle.isSticky()) {
+			this.ballObject.setX(myPaddle.paddleObject.getX() + 30);
+			this.ballObject.setY(myPaddle.paddleObject.getY() - 10);
 			this.xSpeed = 0;
 			this.ySpeed = 0;
 		}
@@ -64,5 +67,13 @@ public class Ball {
 	public void delete() {
 		this.xSpeed = 0;
 		this.ySpeed = 0;
+	}
+	
+	public void createExtra() {
+		Image ballImage = new Image(getClass().getClassLoader().getResourceAsStream(EXTRA_IMAGE));
+		ballObject = new ImageView(ballImage);
+		move = true;
+		xSpeed = 55;
+		ySpeed = 55;
 	}
 }

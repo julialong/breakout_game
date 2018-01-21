@@ -11,6 +11,7 @@ public class Block {
 	public int lives;
 	public int points;
 	public Boolean multiply;
+	public int powerup;
 	
 	private static final String BASIC_BLOCK = "basic_brick.gif";
 	private static final String TWO_BLOCK = "block2.gif";
@@ -73,5 +74,21 @@ public class Block {
 			Start.root.getChildren().remove(this.blockObject);
 			this.blockOn = false;
 		}
+	}
+	
+	public Boolean hasPowerupBlock() {
+		return (this.powerup == 1 || this.powerup == 2);
+	}
+	
+	public Boolean releaseBalls() {
+		return (this.powerup == 3);
+	}
+	
+	public double getX() {
+		return this.blockObject.getX();
+	}
+	
+	public double getY() {
+		return this.blockObject.getY();
 	}
 }
