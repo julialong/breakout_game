@@ -37,7 +37,6 @@ public class Start extends Application {
 	public static final String LEVEL_3 = "Level_Three.txt";
 	public static final String LEVEL_4 = "Level_Four.txt";
 
-	// variables from input file determine number and structure of blocks
 	private String blockFile;
 	private int numBlocks;
 	private int numLeft;
@@ -47,7 +46,6 @@ public class Start extends Application {
 	private Boolean hardMode = false;
 	private double hardTime;
 
-	// important components of the game
 	private Scene myScene;
 	private int myLevel;
 	private Paddle myPaddle;
@@ -115,67 +113,45 @@ public class Start extends Application {
 	}
 
 	private void chooseLevel() {
-		if (myLevel == 1) {
-			blockFile = LEVEL_1;
-		}
-		if (myLevel == 2) {
-			blockFile = LEVEL_2;
-		}
-		if (myLevel == 3) {
-			blockFile = LEVEL_3;
-		}
-		if (myLevel == 4) {
-			blockFile = LEVEL_4;
-		}
+		if (myLevel == 1) blockFile = LEVEL_1;
+		if (myLevel == 2) blockFile = LEVEL_2;
+		if (myLevel == 3) blockFile = LEVEL_3;
+		if (myLevel == 4) blockFile = LEVEL_4;
 	}
 
 	private void step(double elapsedTime) {
-
-		if (myLevel == 0 || myLevel == 5) {
-			return;
-		}
+		if (myLevel == 0 || myLevel == 5) return;
 		moveBalls(elapsedTime);
-	
 		checkTimedObjects(elapsedTime);
-
 		checkLevel();
-
 		pointDisplay.changeDisplay("Points: " + myPoints);
 	}
 
 	private Scene setLevel(int width, int height, Paint background) {
 		root = new Group();
-		
 		Scene scene = new Scene(root, width, height, background);
-
-		if (myLevel == 0) {
-			ImageView welcomeScreen = new ImageView(
-					new Image(getClass().getClassLoader().getResourceAsStream(WELCOME_SCREEN)));
-			root.getChildren().add(welcomeScreen);
-		} else {
+		if (myLevel == 0)
+			showWelcomeScreen();
+		else {
 			chooseLevel();
-			
 			createPaddle();
-			
 			readInput(blockFile);
-			
 			createBlocks();
-			
-			extraBalls = new ArrayList<Ball>();
-			
 			createLifeIndicators();
-			
 			generateBall();
-			
 			checkHardMode();
-			
 			createStatusDisplay();
-			
 			initializeScreen();
 		}
 
 		scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
 		return scene;
+	}
+
+	private void showWelcomeScreen() {
+		ImageView welcomeScreen = new ImageView(
+				new Image(getClass().getClassLoader().getResourceAsStream(WELCOME_SCREEN)));
+		root.getChildren().add(welcomeScreen);
 	}
 
 	private void changeScene() {
@@ -305,6 +281,7 @@ public class Start extends Application {
 		myBall = new Ball();
 		myBall.setX(GAME_WIDTH / 2);
 		myBall.setY(GAME_HEIGHT - 150);
+		extraBalls = new ArrayList<Ball>();
 	}
 	
 	private void moveBalls(double elapsedTime) {
@@ -458,7 +435,6 @@ public class Start extends Application {
 		for (int i = 0; i < myLives; i++) {
 			root.getChildren().add(lifeBalls[i].getBallObject());
 		}
-
 	}
 
 	private void releasePowerups(Block block) {
