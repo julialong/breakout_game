@@ -134,75 +134,18 @@ public class Start extends Application {
 		if (myLevel == 0 || myLevel == 5) {
 			return;
 		}
-
-		myBall.speedBall(myPaddle, elapsedTime);
-		changeBallPos(myBall, myBall.getBallObject().getX() + myBall.getXSpeed() * elapsedTime,
-				myBall.getBallObject().getY() + myBall.getYSpeed() * elapsedTime);
-
-		checkCollisions(myBall);
-
-		if (extraBalls != null) {
-			for (Iterator<Ball> itBall = extraBalls.iterator(); itBall.hasNext();) {
-				Ball ball = itBall.next();
-				ball.speedBall(myPaddle, elapsedTime);
-				changeBallPos(ball, ball.getBallObject().getX() + ball.getXSpeed() * elapsedTime,
-						ball.getBallObject().getY() + ball.getYSpeed() * elapsedTime);
-				checkCollisions(ball);
-			}
-		}
-		
-		for (Block block : myBlocks) {
-			block.updateTime(elapsedTime);
-			if (block.getBlockType() == 4 && block.checkTime() > MAX_BLOCK_TIME) destroy(block);
-		}
+		moveBalls(elapsedTime);
+	
+		checkTimedObjects(elapsedTime);
 
 		checkLevel();
 
-		if (hardMode) {
-			hardTime = hardTime - elapsedTime;
-			timeDisplay.changeDisplay("Time remaining: " + (int) hardTime);
-		}
-
-		checkTime();
-
-		pTime += elapsedTime;
-		if (pTime > 10) {
-			myBall.setBounce(true);
-			for (Ball ball : extraBalls) {
-				ball.setBounce(true);
-			}
-		}
-
-		if (myPaddle.isSticky()) {
-			stickyTime += elapsedTime;
-			if (stickyTime > 30) {
-				normalPaddle();
-			}
-		}
-
-		for (Powerup power : PowerupList) {
-			power.setY(power.getY() + power.getYSpeed() * elapsedTime);
-			if (power.getPowerObject().getBoundsInParent().intersects(myPaddle.getPaddleObject().getBoundsInParent())) {
-				activatePowerup(power);
-				root.getChildren().remove(power.getPowerObject());
-			}
-		}
-
 		pointDisplay.changeDisplay("Points: " + myPoints);
-
-		if (myBall.getY() > GAME_HEIGHT - 10) {
-			myLives--;
-			checkLives();
-			myBall.turnOff();
-			myBall.setX(GAME_WIDTH / 2);
-			myBall.setY(GAME_HEIGHT - 150);
-		}
-
 	}
 
 	private Scene setLevel(int width, int height, Paint background) {
 		root = new Group();
-		// create level to see other objects
+		
 		Scene scene = new Scene(root, width, height, background);
 
 		if (myLevel == 0) {
@@ -211,38 +154,24 @@ public class Start extends Application {
 			root.getChildren().add(welcomeScreen);
 		} else {
 			chooseLevel();
-
-			// create the paddle
-			myPaddle = new Paddle();
-			myPaddle.setX(GAME_WIDTH / 2);
-			myPaddle.setY(GAME_HEIGHT - 10);
-
+			
+			createPaddle();
+			
 			readInput(blockFile);
-
+			
 			createBlocks();
-
+			
 			extraBalls = new ArrayList<Ball>();
-
-			lifeBalls = new Ball[myLives];
-			for (int i = 0; i < myLives; i++) {
-				lifeBalls[i] = new Ball();
-				lifeBalls[i].setX(GAME_WIDTH - 20 * i - 20);
-				lifeBalls[i].setY(10);
-				root.getChildren().add(lifeBalls[i].getBallObject());
-			}
-
+			
+			createLifeIndicators();
+			
 			generateBall();
-
+			
 			checkHardMode();
-
+			
 			createStatusDisplay();
-
-			// add shapes to root to display
-			root.getChildren().add(myPaddle.getPaddleObject());
-			for (int i = 0; i < numBlocks; i++) {
-				root.getChildren().add(myBlocks[i].getBlockObject());
-			}
-			root.getChildren().add(myBall.getBallObject());
+			
+			initializeScreen();
 		}
 
 		scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
@@ -267,7 +196,7 @@ public class Start extends Application {
 			chooseLevel();
 			changeScene();
 		}
-		if (myLevel > 0 && code == KeyCode.SPACE && !myBall.isStuck()) {
+		if (myLevel > 0 && code == KeyCode.SPACE && !myBall.isStuck() && !myBall.getMove()) {
 			myBall.turnOn();
 		}
 		if (myLevel > 0 && code == KeyCode.SPACE && !myBall.getMove() && myBall.isStuck()) {
@@ -330,6 +259,12 @@ public class Start extends Application {
 		animation.setDelay(Duration.seconds(2));
 		animation.play();
 	}
+	
+	private void createPaddle() {
+		myPaddle = new Paddle();
+		myPaddle.setX(GAME_WIDTH / 2);
+		myPaddle.setY(GAME_HEIGHT - 10);
+	}
 
 	private void checkHardMode() {
 		if (hardMode) {
@@ -347,11 +282,124 @@ public class Start extends Application {
 		root.getChildren().add(levelDisplay.getDisplayText());
 		root.getChildren().add(pointDisplay.getDisplayText());
 	}
+	
+	private void initializeScreen() {
+		root.getChildren().add(myPaddle.getPaddleObject());
+		for (int i = 0; i < numBlocks; i++) {
+			root.getChildren().add(myBlocks[i].getBlockObject());
+		}
+		root.getChildren().add(myBall.getBallObject());
+	}
+	
+	private void createLifeIndicators() {
+		lifeBalls = new Ball[myLives];
+		for (int i = 0; i < myLives; i++) {
+			lifeBalls[i] = new Ball();
+			lifeBalls[i].setX(GAME_WIDTH - 20 * i - 20);
+			lifeBalls[i].setY(10);
+			root.getChildren().add(lifeBalls[i].getBallObject());
+		}
+	}
 
 	private void generateBall() {
 		myBall = new Ball();
 		myBall.setX(GAME_WIDTH / 2);
 		myBall.setY(GAME_HEIGHT - 150);
+	}
+	
+	private void moveBalls(double elapsedTime) {
+		myBall.speedBall(myPaddle, elapsedTime);
+		changeBallPos(myBall, myBall.getBallObject().getX() + myBall.getXSpeed() * elapsedTime,
+				myBall.getBallObject().getY() + myBall.getYSpeed() * elapsedTime);
+
+		checkCollisions(myBall);
+		checkPowerupBalls(elapsedTime);
+		checkIfDied();
+	}
+	
+	private void checkPowerupBalls(double elapsedTime) {
+		if (extraBalls != null) {
+			for (Iterator<Ball> itBall = extraBalls.iterator(); itBall.hasNext();) {
+				Ball ball = itBall.next();
+				ball.speedBall(myPaddle, elapsedTime);
+				changeBallPos(ball, ball.getBallObject().getX() + ball.getXSpeed() * elapsedTime,
+						ball.getBallObject().getY() + ball.getYSpeed() * elapsedTime);
+				checkCollisions(ball);
+			}
+		}
+	}
+	
+	private void checkIfDied() {
+		if (myBall.getY() > GAME_HEIGHT - 10) {
+			myLives--;
+			checkLives();
+			myBall.turnOff();
+			myBall.setX(GAME_WIDTH / 2);
+			myBall.setY(GAME_HEIGHT - 150);
+		}
+	}
+	
+	private void checkTimedObjects(double elapsedTime) {
+		checkTimedBlocks(elapsedTime);
+		checkTimedBalls(elapsedTime);
+		checkStickyTime(elapsedTime);
+		updateHardMode(elapsedTime);
+		checkPowerups(elapsedTime);
+	}
+	
+	private void checkPowerups(double elapsedTime) {
+		for (Powerup power : PowerupList) {
+			power.setY(power.getY() + power.getYSpeed() * elapsedTime);
+			if (power.getPowerObject().getBoundsInParent().intersects(myPaddle.getPaddleObject().getBoundsInParent())) {
+				activatePowerup(power);
+				root.getChildren().remove(power.getPowerObject());
+			}
+		}
+	}
+	
+	private void checkTimedBlocks(double elapsedTime) {
+		for (Block block : myBlocks) {
+			block.updateTime(elapsedTime);
+			if (block.getBlockType() == 4 && block.checkTime() > MAX_BLOCK_TIME) destroy(block);
+		}
+	}
+	
+	private void checkTimedBalls(double elapsedTime) {
+		pTime += elapsedTime;
+		if (pTime > 10) {
+			myBall.setBounce(true);
+			for (Ball ball : extraBalls) {
+				ball.setBounce(true);
+			}
+		}
+	}
+	
+	private void checkStickyTime(double elapsedTime) {
+		if (myPaddle.isSticky()) {
+			stickyTime += elapsedTime;
+			if (stickyTime > 30) {
+				normalPaddle();
+			}
+		}
+	}
+	
+	private void checkHardTime() {
+		if (hardMode) {
+			if (hardTime <= 0) {
+				hardMode = false;
+				removeObject(myBall.getBallObject());
+				cleanGame();
+				displayLost();
+			}
+		}
+	}
+	
+	private void updateHardMode(double elapsedTime) {
+		if (hardMode) {
+			hardTime = hardTime - elapsedTime;
+			timeDisplay.changeDisplay("Time remaining: " + (int) hardTime);
+		}
+		checkHardTime();
 	}
 
 	private void checkLives() {
@@ -361,17 +409,6 @@ public class Start extends Application {
 		}
 		if (myLives >= 0 && myLives < 3)
 			removeObject(lifeBalls[myLives].getBallObject());
-	}
-
-	private void checkTime() {
-		if (hardMode) {
-			if (hardTime <= 0) {
-				hardMode = false;
-				removeObject(myBall.getBallObject());
-				cleanGame();
-				displayLost();
-			}
-		}
 	}
 
 	private void displayLost() {
