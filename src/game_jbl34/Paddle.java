@@ -3,59 +3,63 @@ package game_jbl34;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-/**
- * The paddle for a basic Breakout game for CS308, Spring 2018
- * @author julia
- *
- */
+public class Paddle {
 
-public class Paddle{
-	
-	public String paddleFile; // the paddle image may change with powerups 
-	public Boolean sticky; // one powerup will allow the paddle to become sticky
-	public Boolean wasSticky;
-	public ImageView paddleObject; // ImageView of paddle
-	
+	private Boolean sticky;
+	private Boolean wasSticky;
+	private ImageView paddleObject;
+
 	// possible images
 	private static final String paddle1 = "paddle.gif";
 	private static final String paddle2 = "sticky_paddle.gif";
 	private static final String paddle3 = "long_paddle.gif";
-	
-	public Paddle(int powerup){
+
+	public Paddle() {
 		wasSticky = false;
-		if(powerup == 0) {
-			paddleFile = paddle1;
-			sticky = false;
-		}
-		else if(powerup == 1){
-			paddleFile = paddle2;
-			sticky = true;
-		}
-		else {
-			paddleFile = paddle3;
-			sticky = false;
-		}
-		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddleFile));
+		sticky = false;
+		Image paddleImage = new Image(getClass().getClassLoader().getResourceAsStream(paddle1));
 		paddleObject = new ImageView(paddleImage);
 	}
-	
+
+	public ImageView getPaddleObject() {
+		return this.paddleObject;
+	}
+
+	public double getX() {
+		return this.paddleObject.getX();
+	}
+
+	public void setX(double position) {
+		this.paddleObject.setX(position);
+	}
+
+	public double getY() {
+		return this.paddleObject.getY();
+	}
+
+	public void setY(double position) {
+		this.paddleObject.setY(position);
+	}
+
 	public void makeSticky() {
 		this.paddleObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle2)));
 		this.sticky = true;
 	}
-	
+
 	public void notSticky() {
-		
+		this.paddleObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle1)));
+		this.sticky = false;
+		this.wasSticky = true;
 	}
-	
+
 	public Boolean isSticky() {
 		return this.sticky;
 	}
-	
+
 	public Boolean wasSticky() {
 		return this.wasSticky;
 	}
-	
+
 	public void makeLong() {
 		this.paddleObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(paddle3)));
 	}
