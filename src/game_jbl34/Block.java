@@ -3,78 +3,87 @@ package game_jbl34;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class Block {
+/**
+ * The Block class is a superclass that defines the basic properties and methods available to the wide variety of blocks.
+ * By changing this to a superclass, it became easier to access basic methods that all of the block types have in common
+ * while allowing certain classes to override the relevant methods without if statements in each method to determine the
+ * block type.
+ * @author julia
+ */
+public abstract class Block {
 
-	private ImageView blockObject;
+    private ImageView blockObject;
 	private Boolean blockOn;
-	private int blockType;
 	private int lives;
 	private int points;
 	private Boolean multiply;
 	private int powerup;
 	private double time;
 
-	private static final String BASIC_BLOCK = "basic_brick.gif";
-	private static final String TWO_BLOCK = "block2.gif";
-	private static final String POINT_BLOCK = "block3.gif";
-	private static final String TIME_BLOCK = "block4.gif";
-	private static final String PERMANENT_BLOCK = "block5.gif";
-
 	/**
-	 * Given the type of block, create a new block with the appropriate features
-	 * 
-	 * @param type
+	 * Creates a generic block without any specific special attributes or behaviors
 	 */
-	public Block(int type) {
-		setBlockObject(type);
+	public Block() {
 		blockOn = true;
 		multiply = false;
-		blockType = type;
-		lives = setLives(type);
-		points = setPoints(type);
+		lives = 1;
+		points = 1;
 		time = 0.0;
 	}
 
-	private void setBlockObject(int type) {
-		Image blockImage = new Image(getClass().getClassLoader().getResourceAsStream(chooseImage(type)));
-		blockObject = new ImageView(blockImage);
-	}
+    /**
+     * Sets the ImageView object for the given block
+     * @param filename is the name of the image used for the given block
+     */
+    public void setBlockObject(String filename) {
+        this.blockObject = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(filename)));
+    }
+
+    /**
+     * Sets the number of lives for the given block
+     */
+    public void setLives(int lifeNum){
+        this.lives = lifeNum;
+    }
+
+    /**
+     * Sets the number of points for the given block
+     */
+    public void setPoints(int numPoints) {
+        this.points = numPoints;
+    }
+
+    /**
+     * This method is empty for all blocks that do not have a timed component
+     * @param timePassed is the amount of time to add to the total time of the block
+     */
+	public void updateTime(double timePassed){
+    }
+
+    /**
+     * @return whether or not the block is timed
+     */
+    public Boolean isTimed(){
+	    return false;
+    }
+
+    /**
+     * @return whether or not the block can be destroyed in one hit
+     */
+    public Boolean isSturdy() {
+	    return false;
+    }
+
+    /**
+     * @return the current total time of the block
+     */
+    public double checkTime(){
+	    return this.time;
+    }
 
 	public ImageView getBlockObject() {
-		return this.blockObject;
-	}
-
-	public int getBlockType() {
-		return this.blockType;
-	}
-
-	private String chooseImage(int type) {
-		if (type == 2)
-			return TWO_BLOCK;
-		if (type == 3)
-			return POINT_BLOCK;
-		if (type == 4)
-			return TIME_BLOCK;
-		if (type == 5)
-			return PERMANENT_BLOCK;
-		return BASIC_BLOCK;
-	}
-
-	private int setLives(int type) {
-		if (type == 2)
-			return 2;
-		if (type == 5)
-			return 100000000;
-		return 1;
-	}
-
-	private int setPoints(int type) {
-		if (type == 1 | type == 2)
-			return 1;
-		if (type == 3 | type == 4)
-			return 2;
-		return 0;
-	}
+        return this.blockObject;
+    }
 
 	public int getPoints() {
 		return this.points;
@@ -88,22 +97,31 @@ public class Block {
 		return this.powerup;
 	}
 
+    /**
+     * @return true if a powerup square should fall from the block when broken
+     */
 	public Boolean hasPowerupBlock() {
 		return (this.powerup == 1 || this.powerup == 2);
 	}
-	
-	public void updateTime(double timePassed) {
-		if (this.blockType == 4) time += timePassed; 
-	}
-	
-	public double checkTime() {
-		return this.time;
-	}
 
+    /**
+     * @return true if extra balls should fall from the block when broken
+     */
 	public Boolean hasBalls() {
 		return (this.powerup == 3);
 	}
 
+    /**
+     * Downgrades the block if the block is sturdy
+     * @param x x position
+     * @param y y position
+     */
+	public void downgradeBlock(double x, double y) {
+    }
+
+    /**
+     * Removes the powerup from the block
+     */
 	public void deletePowerup() {
 		this.powerup = 0;
 	}
@@ -124,38 +142,39 @@ public class Block {
 		return this.blockObject.getY();
 	}
 
+    /**
+     * turns the multiplier on
+     */
 	public void multiplyOn() {
 		this.multiply = true;
-	}
-
-	public void multiplyOff() {
-		this.multiply = false;
 	}
 
 	public Boolean getMultiply() {
 		return this.multiply;
 	}
 
+    /**
+     * Indicates that the block should not be visible to the player
+     */
 	public void turnOff() {
 		this.blockOn = false;
 	}
 
+    /**
+     * @return true if the block should be visible to the player
+     */
 	public Boolean isOn() {
 		return this.blockOn;
 	}
 
+    /**
+     * Updates the lives of the block
+     */
 	public void loseLife() {
 		this.lives--;
 	}
 
 	public int getLives() {
 		return this.lives;
-	}
-
-	public void downgradeBlock(double x, double y) {
-		Image blockImage = new Image(getClass().getClassLoader().getResourceAsStream(BASIC_BLOCK));
-		this.blockObject = new ImageView(blockImage);
-		this.blockObject.setX(x);
-		this.blockObject.setY(y);
 	}
 }

@@ -5,8 +5,11 @@ First project for CompSci 308 Fall 2017
 # breakout_game
 
 Name: Julia Long
+
 Date started: 1.16.18
+
 Date finished: 1.22.18
+
 Estimated time spent: 15 hours
 
 Required files: 

@@ -21,21 +21,21 @@ import javafx.util.Duration;
 
 public class Start extends Application {
 	public static final Paint START_COLOR = Color.ANTIQUEWHITE;
-	public static final String WELCOME_SCREEN = "splash.gif";
-	public static final String LOST_SCREEN = "lost.gif";
-	public static final String WON_SCREEN = "won.gif";
-	public static final Paint BACKGROUND_COLOR = Color.PINK;
-	public static final int GAME_HEIGHT = 400;
+	private static final String WELCOME_SCREEN = "splash.gif";
+    private static final String LOST_SCREEN = "lost.gif";
+    private static final String WON_SCREEN = "won.gif";
+    private static final Paint BACKGROUND_COLOR = Color.PINK;
+    private static final int GAME_HEIGHT = 400;
 	public static final int GAME_WIDTH = 600;
-	public static final int FRAMES_PER_SECOND = 40;
-	public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
-	public static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
-	public static final double PADDLE_SPEED = 40;
-	public static final double MAX_BLOCK_TIME = 60;
-	public static final String LEVEL_1 = "Level_One.txt";
-	public static final String LEVEL_2 = "Level_Two.txt";
-	public static final String LEVEL_3 = "Level_Three.txt";
-	public static final String LEVEL_4 = "Level_Four.txt";
+    private static final int FRAMES_PER_SECOND = 40;
+    private static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
+    private static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
+    private static final double PADDLE_SPEED = 40;
+    private static final double MAX_BLOCK_TIME = 60;
+    private static final String LEVEL_1 = "Level_One.txt";
+    private static final String LEVEL_2 = "Level_Two.txt";
+    private static final String LEVEL_3 = "Level_Three.txt";
+    private static final String LEVEL_4 = "Level_Four.txt";
 
 	private String blockFile;
 	private int numBlocks;
@@ -72,6 +72,10 @@ public class Start extends Application {
 		launch(args);
 	}
 
+    /**
+     * Starts the game animation
+     * @param beginGame is the current JavaFX stage
+     */
 	@Override
 	public void start(Stage beginGame) {
 		myLevel = 0;
@@ -84,6 +88,10 @@ public class Start extends Application {
 		startAnimation();
 	}
 
+    /**
+     * Reads the input file name to load a level
+     * @param input is the string name of the file
+     */
 	private void readInput(String input) {
 
 		try {
@@ -112,6 +120,9 @@ public class Start extends Application {
 		}
 	}
 
+    /**
+     * Sets the file to use based on where myLevel is currently set
+     */
 	private void chooseLevel() {
 		if (myLevel == 1) blockFile = LEVEL_1;
 		if (myLevel == 2) blockFile = LEVEL_2;
@@ -119,6 +130,10 @@ public class Start extends Application {
 		if (myLevel == 4) blockFile = LEVEL_4;
 	}
 
+    /**
+     * Steps the animation through the program
+     * @param elapsedTime is the double of the amount of time passed
+     */
 	private void step(double elapsedTime) {
 		if (myLevel == 0 || myLevel == 5) return;
 		moveBalls(elapsedTime);
@@ -127,6 +142,13 @@ public class Start extends Application {
 		pointDisplay.changeDisplay("Points: " + myPoints);
 	}
 
+    /**
+     * Sets the beginning of the
+     * @param width
+     * @param height
+     * @param background
+     * @return
+     */
 	private Scene setLevel(int width, int height, Paint background) {
 		root = new Group();
 		Scene scene = new Scene(root, width, height, background);
@@ -148,12 +170,18 @@ public class Start extends Application {
 		return scene;
 	}
 
+    /**
+     * Shows the welcome screen graphic
+     */
 	private void showWelcomeScreen() {
 		ImageView welcomeScreen = new ImageView(
 				new Image(getClass().getClassLoader().getResourceAsStream(WELCOME_SCREEN)));
 		root.getChildren().add(welcomeScreen);
 	}
 
+    /**
+     * Changes the JavaFX screen to a new level
+     */
 	private void changeScene() {
 		currentStage.close();
 		Stage newGame = new Stage();
@@ -166,6 +194,10 @@ public class Start extends Application {
 		startAnimation();
 	}
 
+    /**
+     * Handles key input by user
+     * @param code key pressed by user
+     */
 	private void handleKeyInput(KeyCode code) {
 		if (myLevel == 0 && code == KeyCode.SPACE) {
 			myLevel++;
@@ -227,6 +259,9 @@ public class Start extends Application {
 		}
 	}
 
+    /**
+     * Starts the animation for the game
+     */
 	private void startAnimation() {
 		frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY));
 		animation = new Timeline();
@@ -235,19 +270,28 @@ public class Start extends Application {
 		animation.setDelay(Duration.seconds(2));
 		animation.play();
 	}
-	
+
+    /**
+     * Creates the paddle object
+     */
 	private void createPaddle() {
 		myPaddle = new Paddle();
 		myPaddle.setX(GAME_WIDTH / 2);
 		myPaddle.setY(GAME_HEIGHT - 10);
 	}
 
+    /**
+     * Checks if the user is playing in hard mode, and sets the timer if they are
+     */
 	private void checkHardMode() {
 		if (hardMode) {
 			hardTime = 160;
 		}
 	}
 
+    /**
+     * Creates the display for the user's status, including level and points, and, if in hard mode, time remaining
+     */
 	private void createStatusDisplay() {
 		pointDisplay = new Display("Points: " + myPoints, 5, 15);
 		levelDisplay = new Display("Level: " + myLevel, 5, 30);
@@ -258,7 +302,10 @@ public class Start extends Application {
 		root.getChildren().add(levelDisplay.getDisplayText());
 		root.getChildren().add(pointDisplay.getDisplayText());
 	}
-	
+
+    /**
+     * Initializes the screen with the paddle, blocks, and ball
+     */
 	private void initializeScreen() {
 		root.getChildren().add(myPaddle.getPaddleObject());
 		for (int i = 0; i < numBlocks; i++) {
@@ -266,7 +313,10 @@ public class Start extends Application {
 		}
 		root.getChildren().add(myBall.getBallObject());
 	}
-	
+
+    /**
+     * Creates life indicators for the game that show in the top corner and disappear when the player loses a life
+     */
 	private void createLifeIndicators() {
 		lifeBalls = new Ball[myLives];
 		for (int i = 0; i < myLives; i++) {
@@ -277,13 +327,20 @@ public class Start extends Application {
 		}
 	}
 
+    /**
+     * Generates a new ball for the user to play with
+     */
 	private void generateBall() {
 		myBall = new Ball();
 		myBall.setX(GAME_WIDTH / 2);
 		myBall.setY(GAME_HEIGHT - 150);
 		extraBalls = new ArrayList<Ball>();
 	}
-	
+
+    /**
+     * Moves the ball based on the ball's velocity as well as time passed
+     * @param elapsedTime is the double amount of time passed
+     */
 	private void moveBalls(double elapsedTime) {
 		myBall.speedBall(myPaddle, elapsedTime);
 		changeBallPos(myBall, myBall.getBallObject().getX() + myBall.getXSpeed() * elapsedTime,
@@ -293,7 +350,12 @@ public class Start extends Application {
 		checkPowerupBalls(elapsedTime);
 		checkIfDied();
 	}
-	
+
+
+	/**
+	 * Checks the collisions and moves the extra balls released
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkPowerupBalls(double elapsedTime) {
 		if (extraBalls != null) {
 			for (Iterator<Ball> itBall = extraBalls.iterator(); itBall.hasNext();) {
@@ -305,7 +367,10 @@ public class Start extends Application {
 			}
 		}
 	}
-	
+
+	/**
+	 * Checks to see if the ball fell out of the bottom of the game
+	 */
 	private void checkIfDied() {
 		if (myBall.getY() > GAME_HEIGHT - 10) {
 			myLives--;
@@ -315,7 +380,11 @@ public class Start extends Application {
 			myBall.setY(GAME_HEIGHT - 150);
 		}
 	}
-	
+
+	/**
+	 * Checks the status of timed objects
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkTimedObjects(double elapsedTime) {
 		checkTimedBlocks(elapsedTime);
 		checkTimedBalls(elapsedTime);
@@ -323,7 +392,11 @@ public class Start extends Application {
 		updateHardMode(elapsedTime);
 		checkPowerups(elapsedTime);
 	}
-	
+
+	/**
+	 * Moves the falling powerups
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkPowerups(double elapsedTime) {
 		for (Powerup power : PowerupList) {
 			power.setY(power.getY() + power.getYSpeed() * elapsedTime);
@@ -333,14 +406,22 @@ public class Start extends Application {
 			}
 		}
 	}
-	
+
+	/**
+	 * Checks the type of blocks that have a time restriction
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkTimedBlocks(double elapsedTime) {
 		for (Block block : myBlocks) {
 			block.updateTime(elapsedTime);
-			if (block.getBlockType() == 4 && block.checkTime() > MAX_BLOCK_TIME) destroy(block);
+			if (block.isTimed() && block.checkTime() > MAX_BLOCK_TIME) destroy(block);
 		}
 	}
-	
+
+	/**
+	 * Checks the balls that have a powerup enabled so that they don't bounce
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkTimedBalls(double elapsedTime) {
 		pTime += elapsedTime;
 		if (pTime > 10) {
@@ -350,7 +431,11 @@ public class Start extends Application {
 			}
 		}
 	}
-	
+
+	/**
+	 * Checks the balls that have a powerup enabled so that they stick to the paddle
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void checkStickyTime(double elapsedTime) {
 		if (myPaddle.isSticky()) {
 			stickyTime += elapsedTime;
@@ -359,7 +444,10 @@ public class Start extends Application {
 			}
 		}
 	}
-	
+
+	/**
+	 * Checks the time if the player is on hard mode, sends them to lose screen if time is up
+	 */
 	private void checkHardTime() {
 		if (hardMode) {
 			if (hardTime <= 0) {
@@ -370,7 +458,11 @@ public class Start extends Application {
 			}
 		}
 	}
-	
+
+	/**
+	 * Updates time remaining in hard mode
+	 * @param elapsedTime is the double amount of time passed
+	 */
 	private void updateHardMode(double elapsedTime) {
 		if (hardMode) {
 			hardTime = hardTime - elapsedTime;
@@ -379,6 +471,9 @@ public class Start extends Application {
 		checkHardTime();
 	}
 
+	/**
+	 * Check the number of lives remaining
+	 */
 	private void checkLives() {
 		if (myLives < 0) {
 			removeObject(myBall.getBallObject());
@@ -388,6 +483,9 @@ public class Start extends Application {
 			removeObject(lifeBalls[myLives].getBallObject());
 	}
 
+	/**
+	 * Display the lost screen
+	 */
 	private void displayLost() {
 		ImageView lostDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(LOST_SCREEN)));
 		endText();
@@ -395,6 +493,9 @@ public class Start extends Application {
 		root.getChildren().add(doneText);
 	}
 
+	/**
+	 * Display the win screen
+	 */
 	private void displayWon() {
 		ImageView wonDisplay = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream(WON_SCREEN)));
 		endText();
@@ -402,6 +503,9 @@ public class Start extends Application {
 		root.getChildren().add(doneText);
 	}
 
+	/**
+	 * Create end text that displays number of points won
+	 */
 	private void endText() {
 		doneText = new Text("" + myPoints);
 		doneText.setFont(new Font(40));
@@ -409,10 +513,13 @@ public class Start extends Application {
 		doneText.setY(GAME_HEIGHT / 2 + 70);
 	}
 
+	/**
+	 * Creates all the blocks for the game
+	 */
 	private void createBlocks() {
 		numLeft = numBlocks;
 		for (int i = 0; i < numBlocks; i++) {
-			myBlocks[i] = new Block(blockType[i]);
+			myBlocks[i] = chooseBlockType(blockType[i]);
 			if (blockType[i] == 5)
 				numLeft--;
 			myBlocks[i].setX(blockPos[i][0]);
@@ -421,12 +528,18 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Turns the multiplier on
+	 */
 	private void multiplyOn() {
 		for (Block block : myBlocks) {
 			block.multiplyOn();
 		}
 	}
 
+	/**
+	 * Restores the lives of the player to 3
+	 */
 	private void restoreLives() {
 		for (int i = 0; i < myLives; i++) {
 			root.getChildren().remove(lifeBalls[i].getBallObject());
@@ -437,6 +550,10 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Releases the powerups from a given block
+	 * @param block is the block that has been hit
+	 */
 	private void releasePowerups(Block block) {
 		if (block.hasPowerupBlock()) {
 			Powerup newPowerup = new Powerup(block.getPowerup());
@@ -452,6 +569,10 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Activates the current powerup if it hits the paddle
+	 * @param powerUp current powerUp
+	 */
 	private void activatePowerup(Powerup powerUp) {
 		if (powerUp.getType() == 1) {
 			double saveX = myPaddle.getX();
@@ -468,6 +589,9 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * reverts the paddle back to normal after the sticky powerup wears off
+	 */
 	private void normalPaddle() {
 		double saveX = myPaddle.getX();
 		double saveY = myPaddle.getY();
@@ -478,6 +602,10 @@ public class Start extends Application {
 		addObject(myPaddle.getPaddleObject());
 	}
 
+	/**
+	 * Releases powerup balls
+	 * @param block is the block that holds the extra balls
+	 */
 	private void releaseTheBalls(Block block) {
 		for (int i = 0; i < 2; i++) {
 			Ball newBall = new Ball();
@@ -489,6 +617,10 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Check if the ball has collided with any objects in the game
+	 * @param ball is the current ball
+	 */
 	private void checkCollisions(Ball ball) {
 		for (Block block : myBlocks) {
 			if (ball.getBallObject().getBoundsInParent().intersects(block.getBlockObject().getBoundsInParent())
@@ -506,11 +638,30 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Chooses the type of block to create given an integer type
+	 * @param type is the type of ball, given as an integer
+	 * @return a new Block object
+	 */
+	private Block chooseBlockType(int type) {
+        if (type == 2) return new SturdyBlock();
+        if (type == 3) return new TwoPointBlock();
+        if (type == 4) return new TimeBlock();
+        if (type == 5) return new PermanentBlock();
+        return new BasicBlock();
+    }
+
+	/**
+	 * Check to see if there are any blocks left in the level
+	 */
 	private void checkLevel() {
 		if (numLeft == 0)
 			noBlocks();
 	}
 
+	/**
+	 * If there are no blocks left, change the level or display won screen
+	 */
 	private void noBlocks() {
 		if (myLevel == 4) {
 			myLevel++;
@@ -524,6 +675,10 @@ public class Start extends Application {
 		}
 	}
 
+	/**
+	 * Check if the ball has collided with the paddle
+	 * @return the ball that intersected with the paddle
+	 */
 	private Ball paddleBall() {
 		if (myBall.getBallObject().getBoundsInParent().intersects(myPaddle.getPaddleObject().getBoundsInParent()))
 			return myBall;
@@ -534,11 +689,20 @@ public class Start extends Application {
 		return null;
 	}
 
+	/**
+	 * Changes the position of the ball
+	 * @param ball Ball object to change position of
+	 * @param x position to change to
+	 * @param y position to change to
+	 */
 	private void changeBallPos(Ball ball, double x, double y) {
 		ball.setX(x);
 		ball.setY(y);
 	}
 
+	/**
+	 * Removes all objects from the JavaFX root
+	 */
 	private void cleanGame() {
 		for (Ball ball : extraBalls) {
 			root.getChildren().remove(ball.getBallObject());
@@ -548,17 +712,29 @@ public class Start extends Application {
 		root.getChildren().remove(pointDisplay.getDisplayText());
 	}
 
-	public void removeObject(ImageView object) {
+	/**
+	 * Removes object from the JavaFX root
+	 * @param object is the object to remove
+	 */
+	private void removeObject(ImageView object) {
 		root.getChildren().remove(object);
 	}
 
-	public void addObject(ImageView object) {
+	/**
+	 * Adds object to the JavaFX root
+	 * @param object is the object to add
+	 */
+	private void addObject(ImageView object) {
 		root.getChildren().add(object);
 	}
 
+	/**
+	 * Destroys the given block
+	 * @param block to destroy
+	 */
 	public void destroy(Block block) {
 		block.loseLife();
-		if (block.getBlockType() == 2 && block.getLives() == 1) {
+		if (block.isSturdy() && block.getLives() == 1) {
 			double saveX = block.getX();
 			double saveY = block.getY();
 			removeObject(block.getBlockObject());
